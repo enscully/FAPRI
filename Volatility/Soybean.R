@@ -64,20 +64,28 @@ ggplot(data = nearbyVolatility, aes(x = as.factor(Date), y = volatility)) +
 # Line of Nov NC price over bar of volatilities
 ggplot(soybean)  + 
   geom_bar(aes(x=Date, y=volatilityNov*max(soybean$NovNC), fill = "filler"), stat="identity", color = "#5c5c5c")+
-  geom_line(aes(x=Date, y=NovNC, color = "lines"), stat="identity", size=1)+
+  geom_line(aes(x=Date, y=NovNC, color = "lines"), stat="identity", size = 1.5)+
   scale_y_continuous(sec.axis = sec_axis(~./max(soybean$NovNC))) + 
   labs(x = "Date", y = "Price", title = "Soybean - November") + 
   scale_fill_manual("", values="#5c5c5c", labels = c("Volatility")) + 
-  scale_color_manual("", values=c(lines = "#1f4161"), labels = c("Price"))
+  scale_color_manual("", values=c(lines = "red"), labels = c("Price")) + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
 
 # Line of Nearby OC price over bar of volatilities
 ggplot(soybean)  + 
   geom_bar(aes(x=Date, y=volatilityNearby*max(soybean$NearbyOC), fill = "filler"), stat="identity", color = "#5c5c5c")+
-  geom_line(aes(x=Date, y=NearbyOC, color = "lines"), stat="identity", size=1)+
+  geom_line(aes(x=Date, y=NearbyOC, color = "lines"), stat="identity", size = 1.5)+
   scale_y_continuous(sec.axis = sec_axis(~./max(soybean$NearbyOC))) + 
   labs(x = "Date", y = "Price", title = "Soybean - Nearby") + 
   scale_fill_manual("", values="#5c5c5c", labels = c("Volatility")) + 
-  scale_color_manual("", values=c(lines = "#1f4161"), labels = c("Price"))
+  scale_color_manual("", values=c(lines = "red"), labels = c("Price")) + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black",  size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
 
 
 
@@ -169,18 +177,64 @@ ggplotly(ggscatter(soybean, x = "volatilityNov", y = "volatilityNearby",
 
 
 
+which(soybean$Date == "2010-1-4")
+
+which(soybean$Date == "2010-5-10")
+which(soybean$Date == "2010-5-20")
+which(soybean$Date == "2010-7-12")
+which(soybean$Date == "2010-7-20")
+
+which(soybean$Date == "2010-12-31")
+which(soybean$Date == "2011-1-3")
+
+which(soybean$Date == "2011-5-10")
+which(soybean$Date == "2011-5-20")
+which(soybean$Date == "2011-7-11")
+which(soybean$Date == "2011-7-20")
+
+which(soybean$Date == "2011-12-30")
+
+ggplot(soybean[506:757,]) + 
+  geom_line(aes(x = Date, y = NovNC), size = 1, linetype = 1) + 
+  geom_ribbon(aes(x = Date, ymin = NovNC - volatilityNov, ymax = NovNC + volatilityNov), linetype = 2, alpha = 0.5) + 
+  geom_point(aes(x = soybean$Date[593], y = soybean$NovNC[593]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[601], y = soybean$NovNC[601]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[636], y = soybean$NovNC[636]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[642], y = soybean$NovNC[642]), size = 4, color = "yellow") + 
+  labs(x = "Date", y = "Price", title = "Soybeans - November") + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
+
+ggplot(soybean[758:1009,]) + 
+  geom_line(aes(x = Date, y = NovNC), size = 1, linetype = 1) + 
+  geom_ribbon(aes(x = Date, ymin = NovNC - volatilityNov, ymax = NovNC + volatilityNov), linetype = 2, alpha = 0.5) + 
+  geom_point(aes(x = soybean$Date[846], y = soybean$NovNC[846]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[854], y = soybean$NovNC[854]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[888], y = soybean$NovNC[888]), size = 4, color = "yellow") + 
+  geom_point(aes(x = soybean$Date[895], y = soybean$NovNC[895]), size = 4, color = "yellow") + 
+  labs(x = "Date", y = "Price", title = "Soybeans - November") + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
+
+
+
+
+
+
+
+
+
+
 
 
 # Nov NC plot with band 1,2,3 SD away
 ggplotly(ggplot(soybean) + 
            geom_line(aes(x = Date, y = NovNC), size = 1, linetype = 1) + 
-           geom_ribbon(aes(x = Date, ymin = soybean$NovNC - soybean$volatilityNov * 3, ymax = soybean$NovNC + soybean$volatilityNov * 3), linetype = 2, alpha=0.25) + 
-           
-           geom_line(aes(x = Date, y = soybean$NovNC + soybean$volatilityNov * 2), linetype = 2, alpha=0.5, col = "blue") +
-           geom_line(aes(x = Date, y = soybean$NovNC - soybean$volatilityNov * 2), linetype = 2, alpha=0.5, col = "blue") +
-           geom_line(aes(x = Date, y = soybean$NovNC + soybean$volatilityNov * 3), linetype = 2, alpha=0.5, col = "forestgreen") +
-           geom_line(aes(x = Date, y = soybean$NovNC - soybean$volatilityNov * 3), linetype = 2, alpha=0.5, col = "forestgreen") +
-           
+           geom_ribbon(aes(x = Date, ymin = soybean$NovNC - soybean$volatilityNov, ymax = soybean$NovNC + soybean$volatilityNov), linetype = 2, alpha=0.5) + 
            labs(x = "Date", y = "Price", title = "Soybean - November"))
 
 
@@ -229,15 +283,23 @@ USDA = c(9.875139584,
 USDA = data.frame(Strategy = "USDA", Price = USDA, Year = averageVolatility$year[1:9])
 
 plot1 = ggplot(data = averageVolatility[1:9,]) + 
-  geom_line(aes(x = as.factor(year[1:9]), y = NovNC[1:9], color = "one"), group = 1) +
-  geom_line(aes(x = as.factor(year[1:9]), y = NearbyOC[1:9], color = "two"), group = 1) + 
+  geom_line(aes(x = as.factor(year[1:9]), y = NovNC[1:9], color = "one"), group = 1, size = 1.5) +
+  geom_line(aes(x = as.factor(year[1:9]), y = NearbyOC[1:9], color = "two"), group = 1, size = 1.5) + 
   scale_color_manual("Legend", values=c(one = "red", two = "blue"), labels = c("NovNC", "NearbyOC")) + 
-  labs(x = "Year", y = "Volatility")
+  labs(x = "Year", y = "Volatility") + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
 
 plot2 = ggplot(data = USDA) + 
-  geom_line(aes(x = as.factor(Year), y = Price, color = "USDA"), group = 1) + 
+  geom_line(aes(x = as.factor(Year), y = Price, color = "USDA"), group = 1, size = 1.5) + 
   scale_color_manual("Legend", values=c(USDA = "black"), labels = c("USDA")) + 
-  labs(x = "Year", y = "Average Price")
+  labs(x = "Year", y = "Average Price") + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
 
 grid.arrange(plot1, plot2, nrow=2, ncol=1, top = "Soybeans")
 

@@ -7,11 +7,13 @@ library(plyr)
 library(ggplot2)
 library(readr)
 
+
+
 futuresMarket <- read_csv("C:/Users/ensxvd/Desktop/main-model/Data/Soybean_FuturesMarket.csv")
 
-soybeanString1 = source("soybeanString1")
-soybeanString2 = source("soybeanString2")
-soybeanString3 = source("soybeanString3")
+soybeanString1 = source("Margin Script Files/Soybean/soybeanString1")
+soybeanString2 = source("Margin Script Files/Soybean/soybeanString2")
+soybeanString3 = source("Margin Script Files/Soybean/soybeanString3")
 
 # string = soybeanString2$value
 
@@ -211,24 +213,61 @@ Soybean_CropYearsBase = appObjectsSoybean[[2]]
 finalizedPriceObjectSoybeanBase = appObjectsSoybean[[3]]
 
 
-POSales = data.frame(matrix(nrow = 1000,  ncol = 7, NA))
+#data
+
+POSales = data.frame(matrix(ncol = 7, NA))
 POSales = data.frame()
 
-for(i in 1: length(Soybean_CropYearObjectsBase)){
-  colNames = colnames(Soybean_CropYearObjectsBase[[i]][["Sales Summary"]][,-1])
-  salesOneYear = cbind(t(Soybean_CropYearObjectsBase[[i]][["Sales Summary"]][,-1]), Date = colNames)
-  POSales = rbind(POSales, salesOneYear)
+# for(i in 1: length(Soybean_CropYearObjectsBase)){
+#   colNames = colnames(Soybean_CropYearObjectsBase[[i]][["Sales Summary"]][,-1])
+#   salesOneYear = cbind(t(Soybean_CropYearObjectsBase[[i]][["Sales Summary"]][,-1]), Date = colNames)
+#   POSales = rbind(POSales, salesOneYear)
+# 
+# }
 
-}
+colNames = colnames(Soybean_CropYearObjectsBase[[1]][["Sales Summary"]][,-1])
+salesOneYear = cbind(t(Soybean_CropYearObjectsBase[[1]][["Sales Summary"]][,-1]), Date = colNames)
+POSales = rbind(POSales, salesOneYear)
 
-
-
-splitRows = which(grepl("Split1", POSales$Date(POSales)) == TRUE)
-str_remove(row.names(POSales)[splitRows], "Split1")
-
-POSales$Date = mdy(row.names(POSales))
 row.names(POSales) = 1:nrow(POSales)
 
+splitRows = which(grepl("Split1", POSales$Date) == TRUE)
+POSales$Date[splitRows] = str_remove(POSales$Date[splitRows], "Split1")
+
+colnames(POSales) = c(Soybean_CropYearObjectsBase[[1]][["Sales Summary"]][,1], "Date")
+
+POSales$Date = mdy(POSales$Date)
+
+marketingYear = Soybean_CropYearObjectsBase[[1]]$`Marketing Year`
+
+
+novCheck = mdy(paste("11-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+janCheck = mdy(paste("01-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+marCheck = mdy(paste("03-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+mayCheck = mdy(paste("05-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+julCheck = mdy(paste("06-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+junCheck = mdy(paste("07-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
+
+November = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - novCheck) == min(abs(mdy(marketingYear$Date) - novCheck)))])
+January = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - janCheck) == min(abs(mdy(marketingYear$Date) - janCheck)))])
+March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])
+May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])
+July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])
+August = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - junCheck) == min(abs(mdy(marketingYear$Date) - junCheck)))])
+
+
+
+interval1 = interval(mdy(marketingYear$Date[1]), November - 1)
+interval2 = interval(November, January - 1)
+interval3 = interval(January, March - 1)
+interval4 = interval(March, May - 1)
+interval5 = interval(May, July - 1)
+interval6 = interval(July, mdy(last(marketingYear$Date)))
+
+
+
+
+marketingYear$Price[which(marketingYear$Price == max(marketingYear$Price))]
 
 
 
@@ -239,6 +278,10 @@ row.names(POSales) = 1:nrow(POSales)
 
 
 
+
+
+
+#
 
 
 

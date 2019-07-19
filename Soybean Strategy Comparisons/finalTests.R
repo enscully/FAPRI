@@ -8,8 +8,10 @@ library(lmerTest)
 library(multcomp)
 library(rcompanion)
 library(readr)
+library(tidyverse)
+library(broom)
 
-soybeans <- read_excel("U:/Emily Scully/Soybean Strategy Comparisons/Soybean Notebook.xlsx")
+soybeans <- read_excel("Soybean Strategy Comparisons/Soybean Notebook.xlsx")
 
 colnames(soybeans) = c("Strategy", "cropYear", "RawAveragePrice", "PreHarvestAverage", "PostHarvestAverage", "StorageAdjustedAverage", 
                        "StorageAdjustedPostHarvestAverage")
@@ -98,7 +100,31 @@ plotNormalHistogram(residuals(rpaRawWOMY))
 qqnorm(residuals(rpaRawWOMY))
 qqline(residuals(rpaRawWOMY), col = "steelblue", lwd = 2)
 
-summary(glht(rpaRawWOMY, linfct=mcp(Strategy = "Tukey")), test = adjusted(type = "bonferroni")) # USDA Different from all other strategies
+rpaRawWOMYsummary = summary(glht(rpaRawWOMY, linfct=mcp(Strategy = "Tukey")), test = adjusted(type = "bonferroni"))# USDA Different from all other strategies
+
+# SELECT PLOTS******* Only non-Multiyear WITH USDA
+rpaRawWOMYselect <- lmer(RawAveragePrice ~ Strategy + (1 | cropYear), data = rawWOMY[127:198,])
+anova(rpaRawWOMYselect) 
+summary(rpaRawWOMYselect)
+
+rpaRawWOMYsummary = summary(glht(rpaRawWOMYselect, linfct=mcp(Strategy = "Tukey")), test = adjusted(type = "bonferroni"))# USDA Different from all other strategies
+
+confint(rpaRawWOMYsummary) %>% 
+  tidy %>% 
+  slice(15:n()) %>%
+  ggplot(aes(lhs, y=estimate, ymin=conf.low, ymax=conf.high)) +
+  geom_hline(yintercept=0, linetype="11", colour="red", size  = 1.5) +
+  geom_errorbar(width = 0.5, size = 1.5) + 
+  geom_point(size = 3) +
+  coord_flip() +
+  theme_classic() + 
+  labs(y = "Estimate", x = "", title = "95% Confidence Interval Example: Soybeans Without Multi-Year Sales or Storage") + 
+  theme(axis.text.x = element_text(face="bold", color="black", size=14),
+        axis.text.y = element_text(face="bold", color="black", size=14),
+        axis.title.x = element_text(color="black", size=14, face="bold"),
+        axis.title.y = element_text(color="black", size=14, face="bold"))
+
+
 
 # Only Multiyear WITH USDA
 rpaRawMY <- lmer(RawAveragePrice ~ Strategy + (1 | cropYear), data = rawAll[190:387,])
@@ -181,8 +207,13 @@ summary(glht(rpastorageAll, linfct = mcp(Strategy = "Tukey")), test = adjusted(t
 
 # ggplots
 
+pd = position_dodge(.2)
+
+# Without Storage
 rawAllWide$USDA = USDA$StorageAdjustedAverage
 rawAllAverages = data.frame(avg = colMeans(rawAllWide))
+rawSummaryStats =  ddply(rawAll, ~ factor(Strategy, levels = unique(Strategy)), summarise, mean = mean(RawAveragePrice), sd = sd(RawAveragePrice))
+colnames(rawSummaryStats) = c("Strategy", "mean", "sd")
 
 ggplot(rawAll, aes(factor(Strategy,levels = unique(Strategy)), RawAveragePrice), col = "black") + 
   geom_boxplot() + 
@@ -193,8 +224,22 @@ ggplot(rawAll, aes(factor(Strategy,levels = unique(Strategy)), RawAveragePrice),
   labs(x = "Strategy", y = "Raw Average Price", title = "Soybeans: Without Storage")
 
 
+ggplot(rawSummaryStats, aes(x = Strategy, y = mean)) +
+  geom_errorbar(aes(ymin = mean - sd,  ymax = mean + sd,), width=.2, size=0.7, position=pd) +
+  geom_hline(aes(yintercept = rawSummaryStats$mean[43], color = "USDA Average")) + 
+  geom_point(shape = 15, size=7, position=pd, aes(color = "Average Price")) +
+  geom_point(data = rawSummaryStats[43, ], aes(x = Strategy, y = mean),color = "red", size=7, shape = 15) + 
+  theme(axis.title = element_text(face = "bold")) +
+  labs(x = "Strategy", y = "Average Price", color = "Legend", title = "Soybeans: Without Storage") + 
+  scale_color_manual(values = c("black", "red")) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Storage
 storageAllWide$USDA = USDA$StorageAdjustedAverage
 storageAllAverages = data.frame(avg = colMeans(storageAllWide))
+storageSummaryStats =  ddply(storageAll, ~ factor(Strategy,levels = unique(Strategy)), summarise,mean=mean(StorageAdjustedAverage),sd=sd(StorageAdjustedAverage))
+colnames(storageSummaryStats) = c("Strategy", "mean", "sd")
+
 
 ggplot(storageAll, aes(factor(Strategy,levels = unique(Strategy)), StorageAdjustedAverage), col = "black") + 
   geom_boxplot() + 
@@ -203,6 +248,44 @@ ggplot(storageAll, aes(factor(Strategy,levels = unique(Strategy)), StorageAdjust
   geom_hline(yintercept = storageAllAverages$avg[43], color = "navyblue") + 
   theme(legend.position="none", axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(x = "Strategy", y = "Storage Adjusted Average", title = "Soybeans: With Storage")
+
+ggplot(storageSummaryStats, aes(x = Strategy, y = mean)) +
+  geom_errorbar(aes(ymin = mean - sd,  ymax = mean + sd,), width=.2, size=0.7, position=pd) +
+  geom_hline(aes(yintercept = storageSummaryStats$mean[43], color = "USDA Average")) + 
+  geom_point(shape = 15, size=7, position=pd, aes(color = "Average Price")) +
+  geom_point(data = storageSummaryStats[43, ], aes(x = Strategy, y = mean),color = "red", size=7, shape = 15) + 
+  theme(axis.title = element_text(face = "bold")) +
+  labs(x = "Strategy", y = "Average Price", color = "Legend", title = "Soybeans: With Storage") + 
+  scale_color_manual(values = c("black", "red")) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+
+ggplot(storageSummaryStats, aes(x = Strategy, y = mean))+
+  geom_bar(stat = "identity", position = position_dodge(.95))+
+  geom_errorbar(aes(ymin = mean - sd,  ymax = mean + sd,), position=position_dodge(.95)) + 
+  coord_cartesian(ylim=c(9,15)) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+
+
+
+
+
+
+
+
+
+ggplot() + 
+  geom_line(data = rawAll, aes(x = cropYear, y = RawAveragePrice, group = Strategy), color = "black") + 
+  geom_line(data = rawAll[379:387,], aes(x = cropYear, y = RawAveragePrice,  group = 1), color = "red")
+
+
+
+
 
 
 
