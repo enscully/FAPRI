@@ -248,7 +248,7 @@ getMaxPrices = function(my, my1, my2, saleDate, deliveryDate){
   myFull = arrange(myFull, Date)
   salesInterval = interval(saleDate, deliveryDate)
   intervalRows = which(myFull$Date %within% salesInterval)
-  maxPrice = myFull$Price[intervalRows[which(myFull$Price[intervalRows] == max(myFull$Price[intervalRows]))]]
+  maxPrice = myFull$Price[intervalRows[which(myFull$Price[intervalRows] == max(myFull$Price[intervalRows]))[1]]]
   
   return(maxPrice)
 }
@@ -310,11 +310,11 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   julCheck = mdy(paste("07-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
   sepCheck = mdy(paste("09-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
   
-  December = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - decCheck) == min(abs(mdy(marketingYear$Date) - decCheck)))])
-  March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])
-  May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])
-  July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])
-  September = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - sepCheck) == min(abs(mdy(marketingYear$Date) - sepCheck)))])
+  December = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - decCheck) == min(abs(mdy(marketingYear$Date) - decCheck)))])[1]
+  March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])[1]
+  May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])[1]
+  July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])[1]
+  September = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - sepCheck) == min(abs(mdy(marketingYear$Date) - sepCheck)))])[1]
   
   # March
   # May
@@ -369,7 +369,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   POSales$intervalRow = NA
   for(i in 1:nrow(POSales)){
     intRows = which(marketingYear$Date %within% POSales$interval[i])
-    POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))]]
+    POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))[1]]]
     
     POSales$Margin[i] = plotMe$avg[which(plotMe$Date == POSales$originalDates[i])]/5000
     POSales$intervalRow[i] = which(marketingYear$Date == POSales$Date[i])

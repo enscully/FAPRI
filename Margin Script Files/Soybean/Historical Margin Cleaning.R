@@ -252,18 +252,26 @@ getMaxPrices = function(my, my1, my2, saleDate, deliveryDate){
   
   intervalRows = which(myFull$Date %within% salesInterval)
   
-  maxPrice = myFull$Price[intervalRows[which(myFull$Price[intervalRows] == max(myFull$Price[intervalRows]))]]
+  maxPrice = myFull$Price[intervalRows[which(myFull$Price[intervalRows] == max(myFull$Price[intervalRows]))[1]]]
   
   return(maxPrice)
 }
 
 
 
-# i = 1
+# i = 8
 # marketingYear = Soybean_CropYearObjectsBase[[i]][["Marketing Year"]]
 # marketingYear1 = NA
 # marketingYear2 = NA
 # salesSummary = Soybean_CropYearObjectsBase[[i]][["TS Sales Summary MY"]]
+# cropYearNumber = i
+
+
+# i = 9
+# marketingYear = Soybean_CropYearObjectsBase[[i]][["Marketing Year"]]
+# marketingYear1 = Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]]
+# marketingYear2 = Soybean_CropYearObjectsBase[[i - 2]][["Marketing Year MY"]]
+# salesSummary = Soybean_CropYearObjectsBase[[i]][["PO Sales Summary MY"]]
 # cropYearNumber = i
 
 
@@ -306,12 +314,12 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   julCheck = mdy(paste("07-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
   augCheck = mdy(paste("08-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
 
-  November = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - novCheck) == min(abs(mdy(marketingYear$Date) - novCheck)))])
-  January = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - janCheck) == min(abs(mdy(marketingYear$Date) - janCheck)))])
-  March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])
-  May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])
-  July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])
-  August = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - augCheck) == min(abs(mdy(marketingYear$Date) - augCheck)))])
+  November = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - novCheck) == min(abs(mdy(marketingYear$Date) - novCheck)))])[1]
+  January = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - janCheck) == min(abs(mdy(marketingYear$Date) - janCheck)))])[1]
+  March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])[1]
+  May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])[1]
+  July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])[1]
+  August = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - augCheck) == min(abs(mdy(marketingYear$Date) - augCheck)))])[1]
 
   interval1 = interval(mdy(marketingYear$Date[1]), November - 1)
   interval2 = interval(November, January - 1)
@@ -357,7 +365,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   POSales$intervalRow = NA
   for(i in 1:nrow(POSales)){
     intRows = which(marketingYear$Date %within% POSales$interval[i])
-    POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))]]
+    POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))[1]]]
     
     POSales$Margin[i] = plotMe$avg[which(plotMe$Date == POSales$originalDates[i])]/5000
     POSales$intervalRow[i] = which(marketingYear$Date == POSales$Date[i])
@@ -457,6 +465,8 @@ for(i in 3:length(Soybean_CropYearObjectsBase)){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
+rownames(marginCosts) = 1:nrow(marginCosts)
+
 write.csv(marginCosts, file = "marginCostsPOMY.csv",row.names=FALSE)
 
 
@@ -476,6 +486,8 @@ for(i in 1:length(Soybean_CropYearObjectsBase)){
   # plot(marginPlot[[i]])
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
+
+rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsPO.csv",row.names=FALSE)
 
@@ -519,6 +531,8 @@ for(i in 3:length(Soybean_CropYearObjectsBase)){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
+rownames(marginCosts) = 1:nrow(marginCosts)
+
 write.csv(marginCosts, file = "marginCostsTSMY.csv",row.names=FALSE)
 
 
@@ -538,6 +552,8 @@ for(i in 1:length(Soybean_CropYearObjectsBase)){
   # plot(marginPlot[[i]])
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
+
+rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsTS.csv",row.names=FALSE)
 
