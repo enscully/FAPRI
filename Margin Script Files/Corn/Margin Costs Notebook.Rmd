@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r, echo = FALSE}
+library(data.table)
+library(dplyr)
+library(formattable)
+library(tidyr)
+library(DT)
+```
+
+
+```{r}
+
+
+cornTS = read_csv("C:/Users/ensxvd/Desktop/FAPRI/Margin Script Files/Corn/marginCostsTS.csv")
+cornTSMY = read_csv("C:/Users/ensxvd/Desktop/FAPRI/Margin Script Files/Corn/marginCostsTSMY.csv")
+soybeanTS = read_csv("C:/Users/ensxvd/Desktop/FAPRI/Margin Script Files/Soybean/marginCostsTS.csv")
+soybeanTSMY = read_csv("C:/Users/ensxvd/Desktop/FAPRI/Margin Script Files/Soybean/marginCostsTSMY.csv")
+
+colnames(cornTS) = c("cropYear", "Date", "Price", "Margin Cost", "Price With Margin")
+colnames(cornTSMY) = c("cropYear", "Date", "Price", "Margin Cost", "Price With Margin")
+colnames(cornTS) = c("cropYear", "Date", "Price", "Margin Cost", "Price With Margin")
+colnames(cornTSMY) = c("cropYear", "Date", "Price", "Margin Cost", "Price With Margin")
+
+cornTS = split(cornTS , f = cornTS$cropYear)
+cornTSMY = split(cornTSMY , f = cornTSMY$cropYear)
+soybeanTS = split(soybeanTS , f = soybeanTS$cropYear)
+soybeanTSMY = split(soybeanTSMY , f = soybeanTSMY$cropYear)
+
+getYearlyResultsTable = function(data) {
+  table = formattable(data, 
+                      align = "c",
+                      list(~ formatter("span",
+                                       style = ~ style(display = "block",
+                                                       "border-radius" = "0px",
+                                                       "padding" = "0px",
+                                                       "text-align" = "center")),
+                           `Date` = formatter("span", style = ~ style(font.weight = "bold"))))
+  return(table)
+}
+
+for(i in 1:length(cornTS)){
+  print(formattable(getYearlyResultsTable(cornTS[[i]][,-1]), rownames = FALSE, 
+              caption = tags$caption(paste("Corn TS Without MY", cornTS[[i]]$cropYear[1]), style = "color:red; font-weight:bold; font-size:100%; text-align:center;"), 
+              options = list(dom = 't', pageLength = 30), align =c("c", "c", "c", "c")))
+}
+
+for(i in 1:length(cornTSMY)){
+  print(formattable(getYearlyResultsTable(cornTSMY[[i]][,-1]), rownames = FALSE, 
+              caption = tags$caption(paste("Corn TS With MY", cornTSMY[[i]]$cropYear[1]), style = "color:red; font-weight:bold; font-size:100%; text-align:center;"), 
+              options = list(dom = 't', pageLength = 30), align =c("c", "c", "c", "c")))
+}
+
+for(i in 1:length(soybeanTS)){
+  print(formattable(getYearlyResultsTable(soybeanTS[[i]][,-1]), rownames = FALSE, 
+              caption = tags$caption(paste("Soybean TS Without MY", soybeanTS[[i]]$cropYear[1]), style = "color:red; font-weight:bold; font-size:100%; text-align:center;"), 
+              options = list(dom = 't', pageLength = 30), align =c("c", "c", "c", "c")))
+}
+
+for(i in 1:length(soybeanTSMY)){
+  print(formattable(getYearlyResultsTable(soybeanTSMY[[i]][,-1]), rownames = FALSE, 
+              caption = tags$caption(paste("Soybean TS With MY", soybeanTSMY[[i]]$cropYear[1]), style = "color:red; font-weight:bold; font-size:100%; text-align:center;"), 
+              options = list(dom = 't', pageLength = 30), align =c("c", "c", "c", "c")))
+}
+
+
+```
+
