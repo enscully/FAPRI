@@ -51,20 +51,20 @@ cleanTextData = function(string, string2){
   
   
   
-  for (i in 1:length(splitter)){
+  for (i in 1:length(splitter)) {
     delim = paste("(?<=", toString(splitter[i]), ")")
     delim = str_replace_all(delim, " ", "")
-    string = unlist(strsplit(string, delim, perl=TRUE))
+    string = unlist(strsplit(string, delim, perl = TRUE))
   }
   
   stringDF = str_split(string, " ")
   
-  for(i in 1:length(stringDF)){
+  for (i in 1:length(stringDF)) {
     stringDF[[i]] = stringDF[[i]][stringDF[[i]] != ""]
     stringDF[[i]] = str_replace_all(stringDF[[i]], "[\r\n]" , "")
   }
   
-  stringDFreal = rbind.fill(lapply(stringDF,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  stringDFreal = rbind.fill(lapply(stringDF,function(y){as.data.frame(t(y),stringsAsFactors = FALSE)}))
   
   stringDFreal$V1 = mdy(stringDFreal$V1)
   stringDFreal$V5 = as.numeric(as.character(stringDFreal$V5))
@@ -125,11 +125,11 @@ predictMargins = function(data, numberOfBushels, p1, p2, p3){
   joinPriceMargins$Interval = NA
   joinPriceMargins$Interval[1] = 1
   
-  for(row in 2:nrow(joinPriceMargins)){
-    if(month(joinPriceMargins$Date[row - 1]) == "8" && month(joinPriceMargins$Date[row]) == "9"){
+  for (row in 2:nrow(joinPriceMargins)){
+    if(month(joinPriceMargins$Date[row - 1]) == "8" && month(joinPriceMargins$Date[row]) == "9") {
       count = count + 1
     }
-    else if(month(joinPriceMargins$Date[row - 1]) == "2" && month(joinPriceMargins$Date[row]) == "3"){
+    else if (month(joinPriceMargins$Date[row - 1]) == "2" && month(joinPriceMargins$Date[row]) == "3") {
       count = count + 1
     }
     
@@ -140,14 +140,14 @@ predictMargins = function(data, numberOfBushels, p1, p2, p3){
   
   intervalRows = list()
   
-  for(i in 1:max(joinPriceMargins$Interval)){
+  for (i in 1:max(joinPriceMargins$Interval)) {
     intervalRows[[i]] = which(joinPriceMargins$Interval == i)
   }
   
   joinPriceMargins$avgCentsPerBushel = NA
   joinPriceMargins$averagePrice = NA
   
-  for(i in 1:length(intervalRows)){
+  for (i in 1:length(intervalRows)) {
     joinPriceMargins$avgCentsPerBushel[intervalRows[[i]]] = as.numeric(tapply(joinPriceMargins$centsPerBushel, joinPriceMargins$Interval, mean)[i])
     joinPriceMargins$averagePrice[intervalRows[[i]]] = as.numeric(tapply(joinPriceMargins$NovNCscaled, joinPriceMargins$Interval, mean)[i])
   }
@@ -159,7 +159,7 @@ predictMargins = function(data, numberOfBushels, p1, p2, p3){
   joinPriceMargins$P2 = NA
   joinPriceMargins$P3 = NA
   
-  for(i in 1:length(intervalRows)){
+  for (i in 1:length(intervalRows)) {
     joinPriceMargins$P1[intervalRows[[i]]] = sort(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])[p1*length(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])]
     joinPriceMargins$P2[intervalRows[[i]]] = sort(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])[p2*length(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])]
     joinPriceMargins$P3[intervalRows[[i]]] = sort(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])[p3*length(joinPriceMargins$pricePlusMargin[intervalRows[[i]]])]
@@ -230,6 +230,11 @@ finalizedPriceObjectSoybeanBase = appObjectsSoybean[[3]]
 
 #data
 
+# library(ggplot2)
+# library(dplyr)
+# library(lubridate)
+# library(stringr)
+
 # my = marketingYear
 # my1 = marketingYear1
 # my2 = marketingYear2
@@ -238,11 +243,11 @@ finalizedPriceObjectSoybeanBase = appObjectsSoybean[[3]]
 
 getMaxPrices = function(my, my1, my2, saleDate, deliveryDate){
   
-  if(!is.na(my) && !is.na(my1) && !is.na(my2)){
+  if (!is.na(my) && !is.na(my1) && !is.na(my2)) {
     my1$Date = mdy(my1$Date)
     my2$Date = mdy(my2$Date)
     myFull = rbind(my, my1, my2)
-  } else if(!is.na(my) && !is.na(my1)){
+  } else if (!is.na(my) && !is.na(my1)) {
     my1$Date = mdy(my1$Date)
     myFull = rbind(my, my1)
   }
@@ -283,7 +288,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   colNames = colnames(salesSummary[,-1])
   
-  if(length(which(grepl("Split1", colNames) == TRUE)) > 0){
+  if (length(which(grepl("Split1", colNames) == TRUE)) > 0) {
     splitRows = which(grepl("Split1", colNames) == TRUE)
     colNames[splitRows] = str_remove(colNames[splitRows], "Split1")
   }
@@ -292,8 +297,8 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   originalDates = colNames
   
-  for(i in 1:length(colnames(salesSummary[,-1]))){
-    if(year(colNames[i]) < year(mdy(marketingYear$Date[1]))){
+  for (i in 1:length(colnames(salesSummary[,-1])) ){
+    if( year(colNames[i]) < year(mdy(marketingYear$Date[1]))) {
       colNames[i] = ymd(paste(year(mdy(marketingYear$Date[1])), "12-10", sep = "-"))
     }
   }
@@ -307,37 +312,37 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   colnames(POSales) = c(salesSummary[,1], "Date")
   
-  novCheck = mdy(paste("11-15", toString(year(mdy(marketingYear$Date[1]))), sep="-"))
-  janCheck = mdy(paste("01-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
-  marCheck = mdy(paste("03-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
-  mayCheck = mdy(paste("05-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
-  julCheck = mdy(paste("07-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
-  augCheck = mdy(paste("08-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep="-"))
-
+  novCheck = mdy(paste("11-15", toString(year(mdy(marketingYear$Date[1]))), sep = "-"))
+  janCheck = mdy(paste("01-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
+  marCheck = mdy(paste("03-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
+  mayCheck = mdy(paste("05-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
+  julCheck = mdy(paste("07-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
+  augCheck = mdy(paste("08-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
+  
   November = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - novCheck) == min(abs(mdy(marketingYear$Date) - novCheck)))])[1]
   January = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - janCheck) == min(abs(mdy(marketingYear$Date) - janCheck)))])[1]
   March = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - marCheck) == min(abs(mdy(marketingYear$Date) - marCheck)))])[1]
   May = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - mayCheck) == min(abs(mdy(marketingYear$Date) - mayCheck)))])[1]
   July = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - julCheck) == min(abs(mdy(marketingYear$Date) - julCheck)))])[1]
   August = mdy(marketingYear$Date[which(abs(mdy(marketingYear$Date) - augCheck) == min(abs(mdy(marketingYear$Date) - augCheck)))])[1]
-
+  
   interval1 = interval(mdy(marketingYear$Date[1]), November - 1)
   interval2 = interval(November, January - 1)
   interval3 = interval(January, March - 1)
   interval4 = interval(March, May - 1)
   interval5 = interval(May, July - 1)
   interval6 = interval(July, August - 1)
-
   
   
-  POSales$deliveryDate = as.Date(1:nrow(POSales), origin=Sys.Date())
-  for(i in 1:nrow(POSales)){
-    if(POSales$Date[i] %within% interval1) POSales$deliveryDate[i] = November
-    if(POSales$Date[i] %within% interval2) POSales$deliveryDate[i] = January
-    if(POSales$Date[i] %within% interval3) POSales$deliveryDate[i] = March
-    if(POSales$Date[i] %within% interval4) POSales$deliveryDate[i] = May
-    if(POSales$Date[i] %within% interval5) POSales$deliveryDate[i] = July
-    if(POSales$Date[i] %within% interval6) POSales$deliveryDate[i] = August
+  
+  POSales$deliveryDate = as.Date(1:nrow(POSales), origin = Sys.Date())
+  for (i in 1:nrow(POSales)) {
+    if (POSales$Date[i] %within% interval1) POSales$deliveryDate[i] = November
+    if (POSales$Date[i] %within% interval2) POSales$deliveryDate[i] = January
+    if (POSales$Date[i] %within% interval3) POSales$deliveryDate[i] = March
+    if (POSales$Date[i] %within% interval4) POSales$deliveryDate[i] = May
+    if (POSales$Date[i] %within% interval5) POSales$deliveryDate[i] = July
+    if (POSales$Date[i] %within% interval6) POSales$deliveryDate[i] = August
   }
   
   intervalList = list(interval1,
@@ -363,7 +368,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   POSales$finalPriceWithMargin = NA
   POSales$Margin = NA
   POSales$intervalRow = NA
-  for(i in 1:nrow(POSales)){
+  for (i in 1:nrow(POSales)) {
     intRows = which(marketingYear$Date %within% POSales$interval[i])
     POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))[1]]]
     
@@ -376,8 +381,8 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
     POSales$finalPriceWithMargin[i] = POSales$finalMarginCost[i] + POSales$Price[i]
   }
   
-  for(i in 1:nrow(POSales)){
-    if(POSales$Trigger[i] == "Multi-Year"){
+  for (i in 1:nrow(POSales)) {
+    if (POSales$Trigger[i] == "Multi-Year") {
       POSales$maxPrice[i] = getMaxPrices(marketingYear, marketingYear1, marketingYear2, POSales$originalDates[i], POSales$Date[i])[1]
       POSales$maxPriceMinusPrice[i] = POSales$maxPrice[i] - POSales$Price[i]
       
@@ -397,7 +402,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   intervalSegments = data.frame(maxPrice = POSales$maxPrice, xstart = mdy(NA), xend = mdy(NA))
   
-  for(i in 1:nrow(intervalSegments)){
+  for (i in 1:nrow(intervalSegments)) {
     intervalSegments$xstart[i] = ymd((POSales$originalDates[i]))
     intervalSegments$xend[i] = ymd(int_end(POSales$interval[i]))
   }
@@ -435,7 +440,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
 marginCosts = data.frame()
 tempList = list()
 marginPlot = list()
-for(i in 1){
+for (i in 1) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             NA,
                             NA,
@@ -445,7 +450,7 @@ for(i in 1){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
-for(i in 2){
+for (i in 2) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]],
                             NA,
@@ -455,7 +460,7 @@ for(i in 2){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
-for(i in 3:length(Soybean_CropYearObjectsBase)){
+for (i in 3:length(Soybean_CropYearObjectsBase)) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]],
                             Soybean_CropYearObjectsBase[[i - 2]][["Marketing Year MY"]],
@@ -467,7 +472,7 @@ for(i in 3:length(Soybean_CropYearObjectsBase)){
 
 rownames(marginCosts) = 1:nrow(marginCosts)
 
-write.csv(marginCosts, file = "marginCostsPOMY.csv",row.names=FALSE)
+write.csv(marginCosts, file = "marginCostsPOMY.csv",row.names = FALSE)
 
 
 #################################################################################################################
@@ -477,7 +482,7 @@ write.csv(marginCosts, file = "marginCostsPOMY.csv",row.names=FALSE)
 marginCosts = data.frame()
 tempList = list()
 marginPlot = list()
-for(i in 1:length(Soybean_CropYearObjectsBase)){
+for (i in 1:length(Soybean_CropYearObjectsBase)) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             NA,
                             NA,
@@ -489,7 +494,7 @@ for(i in 1:length(Soybean_CropYearObjectsBase)){
 
 rownames(marginCosts) = 1:nrow(marginCosts)
 
-write.csv(marginCosts, file = "marginCostsPO.csv",row.names=FALSE)
+write.csv(marginCosts, file = "marginCostsPO.csv",row.names = FALSE)
 
 
 
@@ -501,7 +506,7 @@ write.csv(marginCosts, file = "marginCostsPO.csv",row.names=FALSE)
 marginCosts = data.frame()
 tempList = list()
 marginPlot = list()
-for(i in 1){
+for (i in 1) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             NA,
                             NA,
@@ -511,7 +516,7 @@ for(i in 1){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
-for(i in 2){
+for (i in 2) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]],
                             NA,
@@ -521,7 +526,7 @@ for(i in 2){
   marginCosts = rbind(marginCosts, cbind(cropYear = rep(Soybean_CropYearObjectsBase[[i]][["Crop Year"]], times = nrow(tempList[[2]])), tempList[[2]]))
 }
 
-for(i in 3:length(Soybean_CropYearObjectsBase)){
+for (i in 3:length(Soybean_CropYearObjectsBase)) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]],
                             Soybean_CropYearObjectsBase[[i - 2]][["Marketing Year MY"]],
@@ -533,7 +538,7 @@ for(i in 3:length(Soybean_CropYearObjectsBase)){
 
 rownames(marginCosts) = 1:nrow(marginCosts)
 
-write.csv(marginCosts, file = "marginCostsTSMY.csv",row.names=FALSE)
+write.csv(marginCosts, file = "marginCostsTSMY.csv",row.names = FALSE)
 
 
 #################################################################################################################
@@ -543,7 +548,8 @@ write.csv(marginCosts, file = "marginCostsTSMY.csv",row.names=FALSE)
 marginCosts = data.frame()
 tempList = list()
 marginPlot = list()
-for(i in 1:length(Soybean_CropYearObjectsBase)){
+
+for (i in 1:length(Soybean_CropYearObjectsBase)) {
   tempList = getMarginCosts(Soybean_CropYearObjectsBase[[i]][["Marketing Year"]], 
                             NA,
                             NA,
@@ -555,7 +561,7 @@ for(i in 1:length(Soybean_CropYearObjectsBase)){
 
 rownames(marginCosts) = 1:nrow(marginCosts)
 
-write.csv(marginCosts, file = "marginCostsTS.csv",row.names=FALSE)
+write.csv(marginCosts, file = "marginCostsTS.csv",row.names = FALSE)
 
 
 
