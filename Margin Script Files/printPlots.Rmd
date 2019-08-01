@@ -1,0 +1,17 @@
+---
+title: "TS Without Multi Year"
+output: html_notebook
+---
+
+
+```{r}
+
+htmltools::tagList(lapply(1:length(marginPlot), function(i) { ggplotly(marginPlot[[i]]) }))
+
+```
+
+
+
+
+
+
