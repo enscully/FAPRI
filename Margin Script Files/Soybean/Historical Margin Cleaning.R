@@ -9,8 +9,6 @@ library(ggplot2)
 library(readr)
 library(ggrepel)
 
-
-
 futuresMarket <- read_csv("C:/Users/ensxvd/Desktop/main-model/Data/Soybean_FuturesMarket.csv")
 
 soybeanString1 = source("Margin Script Files/Soybean/soybeanString1")
@@ -64,7 +62,7 @@ cleanTextData = function(string, string2){
     stringDF[[i]] = str_replace_all(stringDF[[i]], "[\r\n]" , "")
   }
   
-  stringDFreal = rbind.fill(lapply(stringDF,function(y){as.data.frame(t(y),stringsAsFactors = FALSE)}))
+  stringDFreal = rbind.fill(lapply(stringDF,function(y){as.data.frame(t(y), stringsAsFactors = FALSE)}))
   
   stringDFreal$V1 = mdy(stringDFreal$V1)
   stringDFreal$V5 = as.numeric(as.character(stringDFreal$V5))
@@ -125,8 +123,8 @@ predictMargins = function(data, numberOfBushels, p1, p2, p3){
   joinPriceMargins$Interval = NA
   joinPriceMargins$Interval[1] = 1
   
-  for (row in 2:nrow(joinPriceMargins)){
-    if(month(joinPriceMargins$Date[row - 1]) == "8" && month(joinPriceMargins$Date[row]) == "9") {
+  for (row in 2:nrow(joinPriceMargins)) {
+    if (month(joinPriceMargins$Date[row - 1]) == "8" && month(joinPriceMargins$Date[row]) == "9") {
       count = count + 1
     }
     else if (month(joinPriceMargins$Date[row - 1]) == "2" && month(joinPriceMargins$Date[row]) == "3") {
@@ -201,26 +199,10 @@ plotMe = predictMargins(soybean[soybean$Date > ymd("2007-01-01"), ], 5000, 0.50,
 
 # Calculating what magin would have been PO Base, non-multi-year
 
-
-# March
-# May
-# July
-# September
-# November
-
 appObjectsSoybean = readRDS("C:/Users/ensxvd/Desktop/main-model/Application/appObjectsSoybeanBase.rds")
 Soybean_CropYearObjectsBase = appObjectsSoybean[[1]]
 Soybean_CropYearsBase = appObjectsSoybean[[2]]
 finalizedPriceObjectSoybeanBase = appObjectsSoybean[[3]]
-
-
-
-
-
-
-
-
-
 
 
 
@@ -262,8 +244,6 @@ getMaxPrices = function(my, my1, my2, saleDate, deliveryDate){
   return(maxPrice)
 }
 
-
-
 # i = 8
 # marketingYear = Soybean_CropYearObjectsBase[[i]][["Marketing Year"]]
 # marketingYear1 = NA
@@ -271,14 +251,12 @@ getMaxPrices = function(my, my1, my2, saleDate, deliveryDate){
 # salesSummary = Soybean_CropYearObjectsBase[[i]][["TS Sales Summary MY"]]
 # cropYearNumber = i
 
-
-# i = 9
+# i = 6
 # marketingYear = Soybean_CropYearObjectsBase[[i]][["Marketing Year"]]
 # marketingYear1 = Soybean_CropYearObjectsBase[[i - 1]][["Marketing Year MY"]]
 # marketingYear2 = Soybean_CropYearObjectsBase[[i - 2]][["Marketing Year MY"]]
 # salesSummary = Soybean_CropYearObjectsBase[[i]][["PO Sales Summary MY"]]
 # cropYearNumber = i
-
 
 getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSummary, cropYearNumber){
   
@@ -286,7 +264,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   POSales = data.frame()
   
-  colNames = colnames(salesSummary[,-1])
+  colNames = colnames(salesSummary[ ,-1])
   
   if (length(which(grepl("Split1", colNames) == TRUE)) > 0) {
     splitRows = which(grepl("Split1", colNames) == TRUE)
@@ -297,20 +275,18 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   
   originalDates = colNames
   
-  for (i in 1:length(colnames(salesSummary[,-1])) ){
-    if( year(colNames[i]) < year(mdy(marketingYear$Date[1]))) {
-      colNames[i] = ymd(paste(year(mdy(marketingYear$Date[1])), "12-10", sep = "-"))
+  for (i in 1:length(colnames(salesSummary[ ,-1])) ) {
+    if ( year(colNames[i]) < year(mdy(marketingYear$Date[1]))) {
+      colNames[i] = ymd(paste(year(mdy(marketingYear$Date[1])), "11-10", sep = "-"))
     }
   }
   
-  salesOneYear = cbind(as.data.frame(t(salesSummary[,-1])), Date = ymd(colNames))
+  salesOneYear = cbind(as.data.frame(t(salesSummary[ ,-1])), Date = ymd(colNames))
   POSales = rbind(POSales, salesOneYear)
   
   row.names(POSales) = 1:nrow(POSales)
   
-  
-  
-  colnames(POSales) = c(salesSummary[,1], "Date")
+  colnames(POSales) = c(salesSummary[ ,1], "Date")
   
   novCheck = mdy(paste("11-15", toString(year(mdy(marketingYear$Date[1]))), sep = "-"))
   janCheck = mdy(paste("01-15", toString(year(mdy(marketingYear$Date[1])) + 1), sep = "-"))
@@ -333,8 +309,6 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
   interval5 = interval(May, July - 1)
   interval6 = interval(July, August - 1)
   
-  
-  
   POSales$deliveryDate = as.Date(1:nrow(POSales), origin = Sys.Date())
   for (i in 1:nrow(POSales)) {
     if (POSales$Date[i] %within% interval1) POSales$deliveryDate[i] = November
@@ -345,17 +319,9 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
     if (POSales$Date[i] %within% interval6) POSales$deliveryDate[i] = August
   }
   
-  intervalList = list(interval1,
-                      interval2,
-                      interval3,
-                      interval4,
-                      interval5,
-                      interval6)
-  
   marketingYear$Date = mdy(marketingYear$Date)
   
   POSales$interval = interval(POSales$Date, (POSales$deliveryDate))
-  
   
   POSales$originalDates = ymd(originalDates)
   
@@ -373,7 +339,7 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
     POSales$maxPrice[i] = marketingYear$Price[intRows[which(marketingYear$Price[intRows] == max(marketingYear$Price[intRows]))[1]]]
     
     POSales$Margin[i] = plotMe$avg[which(plotMe$Date == POSales$originalDates[i])]/5000
-    POSales$intervalRow[i] = which(marketingYear$Date == POSales$Date[i])
+    POSales$intervalRow[i] = which((marketingYear$Date - POSales$Date[i]) == min(abs(marketingYear$Date - POSales$Date[i])))
     
     POSales$maxPriceMinusPrice[i] = POSales$maxPrice[i] - POSales$Price[i]
     
@@ -407,20 +373,36 @@ getMarginCosts = function(marketingYear, marketingYear1, marketingYear2, salesSu
     intervalSegments$xend[i] = ymd(int_end(POSales$interval[i]))
   }
   
+  # MY Plotting
   plot = ggplot() +
     geom_line(data = marketingYear, aes(x = Date, y = Price), color = "black") +
-    # geom_line(data = plotMe, aes(x = Date, y = NovNCscaled)) +
+    geom_line(data = plotMe, aes(x = Date, y = NovNCscaled)) +
     geom_segment(data = intervalSegments, aes(x = ymd(xstart), xend = ymd(xend), y = maxPrice, yend = maxPrice, color = "ints"), linetype = "dashed") +
-    geom_point(data = POSales, aes(x = Date, y = Price, color = "price"), size = 2) +
-    geom_point(data = POSales, aes(x = Date, y = finalPriceWithMargin, color = "marginAdj"), size = 2) +
+    geom_point(data = POSales, aes(x = originalDates, y = Price, color = "price"), size = 2) +
+    geom_point(data = POSales, aes(x = originalDates, y = finalPriceWithMargin, color = "marginAdj"), size = 2) +
     ggtitle(paste("Crop Year", cropYearNumber)) +
     scale_color_manual("Legend",
                        values = c(ints = "black", price = "forestgreen", marginAdj = "navyblue", vert = "red"),
                        labels = c("Max Price", "Price + Margin", "Sale Price", "Margin Cost")) +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) + 
-    geom_segment(data = POSales, aes(x = Date, y = Price, xend = Date, yend = finalPriceWithMargin, color = "vert")) + 
-    geom_text(data = POSales, aes(x = Date, label = round((POSales$finalMarginCost), digits = 2), y = (finalPriceWithMargin + Price)/2), 
+    geom_segment(data = POSales, aes(x = originalDates, y = Price, xend = originalDates, yend = finalPriceWithMargin, color = "vert")) + 
+    geom_text(data = POSales, aes(x = originalDates, label = round((POSales$finalMarginCost), digits = 2), y = (finalPriceWithMargin + Price)/2), 
               angle = 0, check_overlap = T, color = "red", size = 4, fontface = "bold")
+  
+  # plot = ggplot() +
+  #   geom_line(data = marketingYear, aes(x = Date, y = Price), color = "black") +
+  #   geom_line(data = plotMe, aes(x = Date, y = NovNCscaled)) +
+  #   geom_segment(data = intervalSegments, aes(x = ymd(xstart), xend = ymd(xend), y = maxPrice, yend = maxPrice, color = "ints"), linetype = "dashed") +
+  #   geom_point(data = POSales, aes(x = Date, y = Price, color = "price"), size = 2) +
+  #   geom_point(data = POSales, aes(x = Date, y = finalPriceWithMargin, color = "marginAdj"), size = 2) +
+  #   ggtitle(paste("Crop Year", cropYearNumber)) +
+  #   scale_color_manual("Legend",
+  #                      values = c(ints = "black", price = "forestgreen", marginAdj = "navyblue", vert = "red"),
+  #                      labels = c("Max Price", "Price + Margin", "Sale Price", "Margin Cost")) +
+  #   scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) + 
+  #   geom_segment(data = POSales, aes(x = Date, y = Price, xend = Date, yend = finalPriceWithMargin, color = "vert")) + 
+  #   geom_text(data = POSales, aes(x = Date, label = round((POSales$finalMarginCost), digits = 2), y = (finalPriceWithMargin + Price)/2), 
+  #             angle = 0, check_overlap = T, color = "red", size = 4, fontface = "bold")
   
   # ggplotly(plot)
   
@@ -474,7 +456,6 @@ rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsPOMY.csv",row.names = FALSE)
 
-
 #################################################################################################################
 # PRICE OBJECTIVE RUN WITHOUT MULTI YEAR SALES
 #################################################################################################################
@@ -495,9 +476,6 @@ for (i in 1:length(Soybean_CropYearObjectsBase)) {
 rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsPO.csv",row.names = FALSE)
-
-
-
 
 #################################################################################################################
 # RUN WITH MULTI YEAR SALES
@@ -540,7 +518,6 @@ rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsTSMY.csv",row.names = FALSE)
 
-
 #################################################################################################################
 # RUN WITHOUT MULTI YEAR SALES
 #################################################################################################################
@@ -562,28 +539,6 @@ for (i in 1:length(Soybean_CropYearObjectsBase)) {
 rownames(marginCosts) = 1:nrow(marginCosts)
 
 write.csv(marginCosts, file = "marginCostsTS.csv",row.names = FALSE)
-
-
-
-
-
-
-
-
-
-
-
-#
-
-for(i in 1: length(Soybean_CropYearObjectsBase)){
-  colNames = colnames(Soybean_CropYearObjectsBase[[i]][["PO Sales Summary MY"]][,-1])
-  salesOneYear = cbind(t(Soybean_CropYearObjectsBase[[i]][["PO Sales Summary MY"]][,-1]), Date = colNames)
-  POSales = rbind(POSales, salesOneYear)
-}
-
-POSales$Date = mdy(POSales$Date)
-
-
 
 
 
@@ -617,9 +572,9 @@ POSales$Date = mdy(POSales$Date)
 
 
 
-# firstCode = soybean[which(soybean$Code == "S-01"),]
-# secondCode = soybean[which(soybean$Code == "S-02"),]
-# lastCode = soybean[which(soybean$Code == "S-10"),]
+# firstCode = soybean[which(soybean$Code == "S-01"), ]
+# secondCode = soybean[which(soybean$Code == "S-02"), ]
+# lastCode = soybean[which(soybean$Code == "S-10"), ]
 # 
 # codes = rbind(firstCode, lastCode)
 # 
@@ -650,80 +605,77 @@ POSales$Date = mdy(POSales$Date)
 ###############################################################################################################
 
 
-data = soybean
-# data = firstCode
-p1 = 0.50
-p2 = 0.75
-p3 = 0.95
-numberOfBushels = 5000
-
-graphRanks = function(data, p1, p2, p3, numberOfBushels){
-  count = 1
-  data = arrange(data, Date)
-  data$Interval = NA
-  data$Interval[1] = 1
-  
-  for(row in 2:nrow(data)){
-    if(month(data$Date[row - 1]) == "8" && month(data$Date[row]) == "9"){
-      count = count + 1
-    }
-    else if(month(data$Date[row - 1]) == "2" && month(data$Date[row]) == "3"){
-      count = count + 1
-    }
-    
-    data$Interval[row] = count
-  }
-  
-  data$P1 = NA
-  data$P2 = NA
-  data$P3 = NA
-  
-  intervalRows = list()
-  
-  for(i in 1:max(data$Interval)){
-    intervalRows[[i]] = which(data$Interval == i)
-  }
-  
-  for(i in 1:length(intervalRows)){
-    data$P1[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p1*length(data$Margin[intervalRows[[i]]])]
-    data$P2[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p2*length(data$Margin[intervalRows[[i]]])]
-    data$P3[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p3*length(data$Margin[intervalRows[[i]]])]
-  }
-  
-  plotMe = data
-  
-  # ggplot(plotMe, aes(x = Date, y = Margin)) +
-  #   geom_point() + 
-  #   geom_line(y = plotMe$P1, linetype = "longdash", col = "red") + 
-  #   geom_line(y = plotMe$P2, linetype = "longdash", col = "#228B22") + 
-  #   geom_line(y = plotMe$P3, linetype = "longdash", col = "blue")
-  
-  P1avg = ddply(data, .(Date), summarize, P1avg = mean(P1))
-  P2avg = ddply(data, .(Date), summarize, P2avg = mean(P2))
-  P3avg = ddply(data, .(Date), summarize, P3avg = mean(P3))
-  
-  percentilesByDay = cbind(P1avg, P2avg = P2avg$P2avg, P3avg = P3avg$P3avg)
-  
-  Nov5000 = data.frame(Date = mdy(futuresMarket$Date), NovNC = futuresMarket$NovNC * numberOfBushels)
-  joinPriceMargins = left_join(Nov5000,percentilesByDay)
-  
-  P1Adj = joinPriceMargins$NovNC + joinPriceMargins$P1avg
-  P2Adj = joinPriceMargins$NovNC + joinPriceMargins$P2avg
-  P3Adj = joinPriceMargins$NovNC + joinPriceMargins$P3avg
-  
-  joinPriceMargins$P1Adj = P1Adj
-  joinPriceMargins$P2Adj = P2Adj
-  joinPriceMargins$P3Adj = P3Adj
-  
-  ggplot(joinPriceMargins[1:250,], aes(x = Date, y = NovNC)) +
-    geom_line() + 
-    geom_line(y = P1Adj[1:250], linetype = "longdash", col = "red") + 
-    # geom_line(y = P2Adj[1:250], linetype = "longdash", col = "#228B22") + 
-    geom_line(y = P3Adj[1:250], linetype = "longdash", col = "blue")
-  
-  
-  
-}
+# data = soybean
+# # data = firstCode
+# p1 = 0.50
+# p2 = 0.75
+# p3 = 0.95
+# numberOfBushels = 5000
+# 
+# graphRanks = function(data, p1, p2, p3, numberOfBushels){
+#   count = 1
+#   data = arrange(data, Date)
+#   data$Interval = NA
+#   data$Interval[1] = 1
+#   
+#   for(row in 2:nrow(data)){
+#     if(month(data$Date[row - 1]) == "8" && month(data$Date[row]) == "9"){
+#       count = count + 1
+#     }
+#     else if(month(data$Date[row - 1]) == "2" && month(data$Date[row]) == "3"){
+#       count = count + 1
+#     }
+#     
+#     data$Interval[row] = count
+#   }
+#   
+#   data$P1 = NA
+#   data$P2 = NA
+#   data$P3 = NA
+#   
+#   intervalRows = list()
+#   
+#   for(i in 1:max(data$Interval)){
+#     intervalRows[[i]] = which(data$Interval == i)
+#   }
+#   
+#   for(i in 1:length(intervalRows)){
+#     data$P1[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p1*length(data$Margin[intervalRows[[i]]])]
+#     data$P2[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p2*length(data$Margin[intervalRows[[i]]])]
+#     data$P3[intervalRows[[i]]] = sort(data$Margin[intervalRows[[i]]])[p3*length(data$Margin[intervalRows[[i]]])]
+#   }
+#   
+#   plotMe = data
+#   
+#   # ggplot(plotMe, aes(x = Date, y = Margin)) +
+#   #   geom_point() + 
+#   #   geom_line(y = plotMe$P1, linetype = "longdash", col = "red") + 
+#   #   geom_line(y = plotMe$P2, linetype = "longdash", col = "#228B22") + 
+#   #   geom_line(y = plotMe$P3, linetype = "longdash", col = "blue")
+#   
+#   P1avg = ddply(data, .(Date), summarize, P1avg = mean(P1))
+#   P2avg = ddply(data, .(Date), summarize, P2avg = mean(P2))
+#   P3avg = ddply(data, .(Date), summarize, P3avg = mean(P3))
+#   
+#   percentilesByDay = cbind(P1avg, P2avg = P2avg$P2avg, P3avg = P3avg$P3avg)
+#   
+#   Nov5000 = data.frame(Date = mdy(futuresMarket$Date), NovNC = futuresMarket$NovNC * numberOfBushels)
+#   joinPriceMargins = left_join(Nov5000,percentilesByDay)
+#   
+#   P1Adj = joinPriceMargins$NovNC + joinPriceMargins$P1avg
+#   P2Adj = joinPriceMargins$NovNC + joinPriceMargins$P2avg
+#   P3Adj = joinPriceMargins$NovNC + joinPriceMargins$P3avg
+#   
+#   joinPriceMargins$P1Adj = P1Adj
+#   joinPriceMargins$P2Adj = P2Adj
+#   joinPriceMargins$P3Adj = P3Adj
+#   
+#   ggplot(joinPriceMargins[1:250, ], aes(x = Date, y = NovNC)) +
+#     geom_line() + 
+#     geom_line(y = P1Adj[1:250], linetype = "longdash", col = "red") + 
+#     # geom_line(y = P2Adj[1:250], linetype = "longdash", col = "#228B22") + 
+#     geom_line(y = P3Adj[1:250], linetype = "longdash", col = "blue")
+# }
 
 
 
