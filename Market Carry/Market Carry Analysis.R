@@ -307,7 +307,7 @@ ggplot() +
   geom_line(data = priceDf, aes(x = price, y = GM), color = "red")
 
 ####################################################################################
-
+# Organize and aggregate data
 
 Skew(futuresMarketSelect$Difference, na.rm = TRUE)
 Kurt(futuresMarketSelect$Difference, na.rm = TRUE)
@@ -317,92 +317,214 @@ futuresMarketSelectNoYear = futuresMarketSelect
 
 
 
-futuresMarketSelectNoYear = futuresMarket[, c("Date", "NovNC", "MarNC")]
+futuresMarketSelectNoYear = cbind(futuresMarket[, c("Date", "NovNC", "MarNC")], percent = futuresMarketSelect$percent)
 futuresMarketSelectNoYear$Difference = futuresMarketSelectNoYear$MarNC - futuresMarketSelectNoYear$NovNC
+
+
+POMarSales = c("06-05",
+               "04-02",
+               "06-04",
+               "06-17",
+               "04-21",
+               "06-19",
+               "07-25",
+               "01-07",
+               "08-23",
+               "02-21",
+               "07-28",
+               "07-29",
+               "08-15")
 
 
 
 futuresMarketSelectNoYear$Date = format(futuresMarketSelectNoYear$Date, "%m-%d")
 
-futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear["Difference"], by = futuresMarketSelectNoYear["Date"], mean)
+futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference", "percent")], by = futuresMarketSelectNoYear["Date"], mean)
+# futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference")], by = futuresMarketSelectNoYear["Date"], mean)
 
 futuresMarketSelectTest$ID = as.numeric(rownames(futuresMarketSelectTest))
 
+futuresMarketSelectTest$POMarSale = "F"
+
+for (i in 1:length(POMarSales)) {
+  futuresMarketSelectTest$POMarSale[which(futuresMarketSelectTest$Date == POMarSales[i])] = "T"
+}
+
+POMar = data.frame(futuresMarketSelectTest[which(futuresMarketSelectTest$POMarSale == "T"), ])
 
 
-ggplot(data = na.omit(futuresMarketSelectTest[1:317,]), aes(x = ID, y = Difference)) +
+####################################################################################
+# Cross validate span choice or difference
+
+set.seed(4)
+x <- futuresMarketSelectTest$ID[1:317]
+y <- futuresMarketSelectTest$Difference[1:317]
+plot(x, y)
+df <- data.frame(x, y)
+
+
+span.seq <- seq(from = 0.15, to = 0.95, by = 0.05) #explores range of spans
+k <- 10 #number of folds
+set.seed(1) # replicate results
+folds <- sample(x = 1:k, size = length(x), replace = TRUE)
+cv.error.mtrx <- matrix(rep(x = NA, times = k * length(span.seq)), 
+                        nrow = length(span.seq), ncol = k)
+
+for (i in 1:length(span.seq)) {
+  for (j in 1:k) {
+    loess.fit <- loess(formula = y ~ x, data = df[folds != j, ], span = span.seq[i])
+    preds <- predict(object = loess.fit, newdata = df[folds == j, ])
+    cv.error.mtrx[i, j] <- mean((df$y[folds == j] - preds)^2, na.rm = TRUE)
+  }
+}
+
+cv.errors <- rowMeans(cv.error.mtrx)
+
+best.span.i <- which.min(cv.errors)
+best.span.i
+span.seq[best.span.i]
+
+plot(x = span.seq, y = cv.errors, type = "l", main = "CV Plot")
+points(x = span.seq, y = cv.errors, 
+       pch = 20, cex = 0.75, col = "blue")
+points(x = span.seq[best.span.i], y = cv.errors[best.span.i], 
+       pch = 20, cex = 1, col = "red")
+
+best.loess.fit <- loess(formula = y ~ x, data = df, 
+                        span = span.seq[best.span.i])
+
+x.seq <- seq(from = min(x), to = max(x), length = 100)
+
+plot(x = df$x, y = df$y, main = "Best Span Plot")
+lines(x = x.seq, y = predict(object = best.loess.fit, 
+                             newdata = data.frame(x = x.seq)), 
+      col = "red", lwd = 2)
+
+#0.35 Best Span
+####################################################################################
+# Graph Difference with LOESS
+
+ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference)) +
   geom_point() +
   geom_vline(xintercept = 125) + # May 5th
   geom_vline(xintercept = 235) + # Aug 24th
+  # geom_vline(xintercept = 242, color = "forestgreen") + # June 14th
   geom_hline(yintercept = 0) +
   
-  # geom_point(x = PODate[1], y = POPrice[1], color = "red", size = 2) + 
-  # geom_point(x = PODate[2], y = POPrice[2], color = "red", size = 2) + 
-  # geom_point(x = PODate[3], y = POPrice[3], color = "red", size = 2) + 
-  # geom_point(x = PODate[4], y = POPrice[4], color = "red", size = 2) + 
-  # geom_point(x = PODate[5], y = POPrice[5], color = "red", size = 2) + 
-  # geom_point(x = PODate[6], y = POPrice[6], color = "red", size = 2) + 
-  # geom_point(x = PODate[7], y = POPrice[7], color = "red", size = 2) + 
-  # geom_point(x = PODate[8], y = POPrice[8], color = "red", size = 2) + 
-  # geom_point(x = PODate[9], y = POPrice[9], color = "red", size = 2) + 
-  # geom_point(x = PODate[10], y = POPrice[10], color = "red", size = 2) + 
-  # geom_point(x = PODate[11], y = POPrice[11], color = "red", size = 2) + 
-  # geom_point(x = PODate[12], y = POPrice[12], color = "red", size = 2) + 
-  # geom_point(x = PODate[13], y = POPrice[13], color = "red", size = 2) + 
+  # geom_point(data = POMar, aes(x = ID, y = Difference), color = "red", size = 2) + 
   
   scale_x_continuous(breaks = seq(0, 317, 5), lim = c(0, 317)) +
-  geom_smooth(method = "loess", se = TRUE, span = 0.5) + 
+  geom_smooth(method = "loess", se = TRUE, span = .35) + 
   annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
   annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
   annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
 
 
 
+####################################################################################
+# Cross validate span choice of percent
+
+set.seed(4)
+x <- futuresMarketSelectTest$ID[1:317]
+y <- futuresMarketSelectTest$percent[1:317]
+plot(x, y)
+df <- data.frame(x, y)
 
 
-ggplot(data = na.omit(futuresMarketSelectTest), aes(x = ID, y = Difference)) +
+span.seq <- seq(from = 0.15, to = 0.95, by = 0.05) #explores range of spans
+k <- 10 #number of folds
+set.seed(1) # replicate results
+folds <- sample(x = 1:k, size = length(x), replace = TRUE)
+cv.error.mtrx <- matrix(rep(x = NA, times = k * length(span.seq)), 
+                        nrow = length(span.seq), ncol = k)
+
+for (i in 1:length(span.seq)) {
+  for (j in 1:k) {
+    loess.fit <- loess(formula = y ~ x, data = df[folds != j, ], span = span.seq[i])
+    preds <- predict(object = loess.fit, newdata = df[folds == j, ])
+    cv.error.mtrx[i, j] <- mean((df$y[folds == j] - preds)^2, na.rm = TRUE)
+  }
+}
+
+cv.errors <- rowMeans(cv.error.mtrx)
+
+best.span.i <- which.min(cv.errors)
+best.span.i
+span.seq[best.span.i]
+
+plot(x = span.seq, y = cv.errors, type = "l", main = "CV Plot")
+points(x = span.seq, y = cv.errors, 
+       pch = 20, cex = 0.75, col = "blue")
+points(x = span.seq[best.span.i], y = cv.errors[best.span.i], 
+       pch = 20, cex = 1, col = "red")
+
+best.loess.fit <- loess(formula = y ~ x, data = df, 
+                        span = span.seq[best.span.i])
+
+x.seq <- seq(from = min(x), to = max(x), length = 100)
+
+plot(x = df$x, y = df$y, main = "Best Span Plot")
+lines(x = x.seq, y = predict(object = best.loess.fit, 
+                             newdata = data.frame(x = x.seq)), 
+      col = "red", lwd = 2)
+
+# 0.9 Best Span
+
+####################################################################################
+# Graph percent with LOESS
+
+
+ggplot(data = na.omit(futuresMarketSelectTest[1:242, c("ID", "percent")]), aes(x = ID, y = percent)) +
   geom_point() +
-  geom_hline(yintercept = 0)
-
-Skew(futuresMarketSelectTest$Difference, na.rm = TRUE)
-Kurt(futuresMarketSelectTest$Difference, na.rm = TRUE)
-
-
-futuresMarketSelectTest = na.omit(futuresMarketSelectTest)
-
-futuresMarketSelectTest$scaled <- scale(futuresMarketSelectTest$Difference)
-
-# check that we get mean of 0 and sd of 1
-mean(futuresMarketSelectTest$scaled, na.rm = TRUE)  # faster version of apply(scaled.dat, 2, mean)
-apply(futuresMarketSelectTest$scaled, 2, sd)
-
-ggplot(data = na.omit(futuresMarketSelectTest), aes(x = Date, y = scaled)) +
-  geom_point() +
-  geom_hline(yintercept = 0)
-
-
-ggplot(data = futuresMarketSelectTest, aes(x = Date, y = Difference)) +
-  geom_point() +
-  geom_hline(yintercept = 0)
-
-ggplot(data = futuresMarketSelectTest, aes(x = Date, y = Difference, group = 1)) +
-  geom_point() +
-  # geom_smooth(method = "loess", se = TRUE, span = 0.35, color = "red") +
-  geom_smooth(method = "loess", se = TRUE, span = 0.5)
-
-loessLine = loess(Difference ~ ID, futuresMarketSelectTest, degree = 1, span = 0.5)
-
-loessFit = data.frame(fits = loessLine$fitted)
-
-
-ggplot(data = futuresMarketSelectTest, aes(x = Date, y = Difference, group = 1)) +
-  geom_point() +
-  geom_line(data = loessFit, aes(x = as.numeric(rownames(loessFit)), y = fits)) +
-  geom_smooth(method = "loess", se = TRUE, span = 0.5)
+  geom_vline(xintercept = 125) + # May 5th
+  geom_vline(xintercept = 235) + # Aug 24th
+  geom_hline(yintercept = 0) +
+  scale_x_continuous(breaks = seq(0, 242, 5), lim = c(0, 242)) +
+  geom_smooth(method = "loess", se = TRUE, span = .3) + 
+  annotate("text", x = 60, y = 30, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  annotate("text", x = 170, y = 30, label = "May 5 - Aug 24", color = "red", size = 10)
 
 ####################################################################################
 
-
+# ggplot(data = na.omit(futuresMarketSelectTest), aes(x = ID, y = percent)) +
+#   geom_point() +
+#   geom_hline(yintercept = 0)
+# 
+# Skew(futuresMarketSelectTest$percent, na.rm = TRUE)
+# Kurt(futuresMarketSelectTest$percent, na.rm = TRUE)
+# 
+# 
+# futuresMarketSelectTest = na.omit(futuresMarketSelectTest)
+# 
+# futuresMarketSelectTest$scaled <- scale(futuresMarketSelectTest$percent)
+# 
+# # check that we get mean of 0 and sd of 1
+# mean(futuresMarketSelectTest$scaled, na.rm = TRUE)  # faster version of apply(scaled.dat, 2, mean)
+# apply(futuresMarketSelectTest$scaled, 2, sd)
+# 
+# ggplot(data = na.omit(futuresMarketSelectTest), aes(x = Date, y = scaled)) +
+#   geom_point() +
+#   geom_hline(yintercept = 0)
+# 
+# 
+# ggplot(data = futuresMarketSelectTest, aes(x = Date, y = percent)) +
+#   geom_point() +
+#   geom_hline(yintercept = 0)
+# 
+# ggplot(data = futuresMarketSelectTest, aes(x = Date, y = percent, group = 1)) +
+#   geom_point() +
+#   # geom_smooth(method = "loess", se = TRUE, span = 0.35, color = "red") +
+#   geom_smooth(method = "loess", se = TRUE, span = 0.5)
+# 
+# loessLine = loess(percent ~ ID, futuresMarketSelectTest, degree = 1, span = 0.5)
+# 
+# loessFit = data.frame(fits = loessLine$fitted)
+# 
+# 
+# ggplot(data = futuresMarketSelectTest, aes(x = Date, y = percent, group = 1)) +
+#   geom_point() +
+#   geom_line(data = loessFit, aes(x = as.numeric(rownames(loessFit)), y = fits)) +
+#   geom_smooth(method = "loess", se = TRUE, span = 0.5)
 
 
 
