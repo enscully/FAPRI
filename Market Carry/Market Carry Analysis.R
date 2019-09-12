@@ -5,6 +5,8 @@ library(ggplot2)
 library(reshape2)
 library(plotly)
 library(DescTools)
+library(gridExtra)
+
 
 
 
@@ -288,10 +290,6 @@ ggplot(data = futuresMarketSelect) +
 # fullCarryDf$percent = (GMdf$GM / fullCarryDf$fullCarry) * 100
 
 
-
-
-
-
 getPrice = function(GM) {
   price = (12 / 0.055) * ((GM / 4.2) - 0.05)
   return(price)
@@ -340,7 +338,6 @@ POMarSales = c("06-05",
 futuresMarketSelectNoYear$Date = format(futuresMarketSelectNoYear$Date, "%m-%d")
 
 futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference", "percent")], by = futuresMarketSelectNoYear["Date"], mean)
-# futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference")], by = futuresMarketSelectNoYear["Date"], mean)
 
 futuresMarketSelectTest$ID = as.numeric(rownames(futuresMarketSelectTest))
 
@@ -404,7 +401,7 @@ lines(x = x.seq, y = predict(object = best.loess.fit,
 ####################################################################################
 # Graph Difference with LOESS
 
-ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference)) +
+d = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference)) +
   geom_point() +
   geom_vline(xintercept = 125) + # May 5th
   geom_vline(xintercept = 235) + # Aug 24th
@@ -418,7 +415,7 @@ ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), ae
   annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
   annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
   annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
-
+d
 
 
 ####################################################################################
@@ -474,15 +471,20 @@ lines(x = x.seq, y = predict(object = best.loess.fit,
 # Graph percent with LOESS
 
 
-ggplot(data = na.omit(futuresMarketSelectTest[1:242, c("ID", "percent")]), aes(x = ID, y = percent)) +
+p = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "percent")]), aes(x = ID, y = percent)) +
   geom_point() +
   geom_vline(xintercept = 125) + # May 5th
   geom_vline(xintercept = 235) + # Aug 24th
   geom_hline(yintercept = 0) +
-  scale_x_continuous(breaks = seq(0, 242, 5), lim = c(0, 242)) +
-  geom_smooth(method = "loess", se = TRUE, span = .3) + 
-  annotate("text", x = 60, y = 30, label = "Jan 1 - May 5", color = "red", size = 10) + 
-  annotate("text", x = 170, y = 30, label = "May 5 - Aug 24", color = "red", size = 10)
+  scale_x_continuous(breaks = seq(0, 317, 5), lim = c(0, 317)) +
+  geom_smooth(method = "loess", se = TRUE, span = .9) + 
+  annotate("text", x = 60, y = -20, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  annotate("text", x = 170, y = -20, label = "May 5 - Aug 24", color = "red", size = 10) + 
+  annotate("text", x = 270, y = -20, label = "Aug 24 - Nov 14", color = "red", size = 10)
+p
+
+
+grid.arrange(d, p, nrow = 2)
 
 ####################################################################################
 
