@@ -405,7 +405,7 @@ d = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")])
   geom_point() +
   geom_vline(xintercept = 125) + # May 5th
   geom_vline(xintercept = 235) + # Aug 24th
-  # geom_vline(xintercept = 242, color = "forestgreen") + # June 14th
+  geom_vline(xintercept = 250, color = "forestgreen") + # June 14th
   geom_hline(yintercept = 0) +
   
   # geom_point(data = POMar, aes(x = ID, y = Difference), color = "red", size = 2) + 
@@ -417,6 +417,17 @@ d = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")])
   annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
 d
 
+# Every 7 Days??
+# 250
+# 257
+# 264
+# 271
+# 278
+# 285
+# 292
+# 299
+# 306
+# 313
 
 ####################################################################################
 # Cross validate span choice of percent
