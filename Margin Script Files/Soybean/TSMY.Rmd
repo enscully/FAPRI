@@ -1,0 +1,47 @@
+---
+title: "TS With Multi Year"
+output: html_notebook
+---
+
+
+
+
+
+
+
+```{r}
+
+
+
+# l <- htmltools::tagList()
+# for (i in 1:length(marginPlot)) {
+#   l[[i]] <- ggplotly(marginPlot[[i]])
+# }
+# l
+
+
+
+
+
+
+
+htmltools::tagList(lapply(1:length(marginPlot), function(i) { ggplotly(marginPlot[[i]]) }))
+
+
+# l <- htmltools::tagList()
+# for (i in 1:3) {
+#   l[[i]] <- plot_ly(x = rnorm(10))
+# }
+# l
+
+
+
+
+
+
+```
+
+
+
+
+
