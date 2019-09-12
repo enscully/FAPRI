@@ -5,6 +5,7 @@ library(ggplot2)
 library(reshape2)
 library(plotly)
 library(DescTools)
+library(gridExtra)
 
 
 
@@ -399,7 +400,7 @@ lines(x = x.seq, y = predict(object = best.loess.fit,
 ####################################################################################
 # Graph Difference with LOESS
 
-ggplot(data = na.omit(futuresMarketSelectTest[1:347,]), aes(x = ID, y = Difference)) +
+d = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference)) +
   geom_point() +
   geom_vline(xintercept = 95) + # April 5th
   geom_vline(xintercept = 235) + # Aug 24th
@@ -412,7 +413,7 @@ ggplot(data = na.omit(futuresMarketSelectTest[1:347,]), aes(x = ID, y = Differen
   annotate("text", x = 60, y = 0.07, label = "Jan 1 - April 5", color = "red", size = 10) + 
   annotate("text", x = 170, y = 0.07, label = "April 5 - Aug 24", color = "red", size = 10) + 
   annotate("text", x = 270, y = 0.07, label = "Aug 24 - Dec 14", color = "red", size = 10)
-
+d
 
 
 ####################################################################################
@@ -468,7 +469,7 @@ lines(x = x.seq, y = predict(object = best.loess.fit,
 # Graph percent with LOESS
 
 
-ggplot(data = na.omit(futuresMarketSelectTest[1:347,]), aes(x = ID, y = percent)) +
+p = ggplot(data = na.omit(futuresMarketSelectTest[1:347,]), aes(x = ID, y = percent)) +
   geom_point() +
   geom_vline(xintercept = 95) + # April 5th
   geom_vline(xintercept = 235) + # Aug 24th
@@ -481,6 +482,9 @@ ggplot(data = na.omit(futuresMarketSelectTest[1:347,]), aes(x = ID, y = percent)
   annotate("text", x = 60, y = 30, label = "Jan 1 - April 5", color = "red", size = 10) + 
   annotate("text", x = 170, y = 30, label = "April 5 - Aug 24", color = "red", size = 10) + 
   annotate("text", x = 270, y = 30, label = "Aug 24 - Dec 14", color = "red", size = 10)
+p
+
+grid.arrange(d, p, nrow = 2)
 
 ####################################################################################
 
