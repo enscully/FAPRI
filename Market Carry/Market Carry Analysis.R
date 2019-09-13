@@ -6,6 +6,7 @@ library(reshape2)
 library(plotly)
 library(DescTools)
 library(gridExtra)
+library(data.table)   # CRAN version 1.10.4
 
 
 
@@ -337,7 +338,7 @@ POMarSales = c("06-05",
 
 futuresMarketSelectNoYear$Date = format(futuresMarketSelectNoYear$Date, "%m-%d")
 
-futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference", "percent")], by = futuresMarketSelectNoYear["Date"], mean)
+futuresMarketSelectTest = aggregate(futuresMarketSelectNoYear[c("Difference", "percent")], by = futuresMarketSelectNoYear["Date"], mean, na.rm = TRUE)
 
 futuresMarketSelectTest$ID = as.numeric(rownames(futuresMarketSelectTest))
 
@@ -418,16 +419,57 @@ d = ggplot(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")])
 d
 
 # Every 7 Days??
-# 250
-# 257
-# 264
-# 271
-# 278
-# 285
-# 292
-# 299
-# 306
-# 313
+# 250 9-08
+# 257 9-15
+# 264 9-22
+# 271 9-29
+# 278 10-6
+# 285 10-13
+# 292 10-20
+# 299 10-27
+# 306 11-03
+# 313 11-10
+
+
+futuresMarketSelectNoYear$originalDate = futuresMarketSelect$Date
+
+futuresMarketSelectNoYear[which(futuresMarketSelectNoYear$Date == "09-08"),]
+futuresMarketSelectNoYear[which(futuresMarketSelectNoYear$Date == "09-15"),]
+
+futuresMarketSelectNoYear$ID = rownames(futuresMarketSelectNoYear)
+futuresMarketSelectNoYear$yearVar = year(futuresMarketSelectNoYear$originalDate)
+
+ggplot(data = na.omit(futuresMarketSelectNoYear[, c("ID", "Difference", "yearVar")]), aes(x = as.numeric(ID), y = Difference, color = as.factor(yearVar))) +
+  geom_point() +
+  # geom_vline(xintercept = 125) + # May 5th
+  # geom_vline(xintercept = 235) + # Aug 24th
+  # geom_vline(xintercept = 250, color = "forestgreen") + # June 14th
+  geom_hline(yintercept = 0) +
+  
+  # geom_point(data = POMar, aes(x = ID, y = Difference), color = "red", size = 2) + 
+  
+  # scale_x_continuous(breaks = seq(0, 2700, 20), lim = c(0, 2700)) +
+  geom_smooth(method = "loess", se = TRUE, span = .35)
+  # annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  # annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
+  # annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
+
+
+
+setDT(x)   # coerce to data.table
+data_wide <- dcast(x, Date ~ yearVar, 
+                   value.var = "Difference")
+
+ggplot(data = na.omit(data_wide), aes(x = Date, y = `2008`)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(method = "loess", se = TRUE, span = .35)
+
+for (i in 2:ncol(data_wide)) {
+  paste("year", colnames(data_wide)[i], sep = "") = data.frame()
+}
+
+
 
 ####################################################################################
 # Cross validate span choice of percent
