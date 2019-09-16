@@ -450,11 +450,11 @@ ggplot(data = na.omit(futuresMarketSelectNoYear[, c("ID", "Difference", "yearVar
   
   # scale_x_continuous(breaks = seq(0, 2700, 20), lim = c(0, 2700)) +
   geom_smooth(method = "loess", se = TRUE, span = .35)
-  # annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
-  # annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
-  # annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
+# annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
+# annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
+# annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
 
-
+x = futuresMarketSelectNoYear
 
 setDT(x)   # coerce to data.table
 data_wide <- dcast(x, Date ~ yearVar, 
@@ -465,9 +465,58 @@ ggplot(data = na.omit(data_wide), aes(x = Date, y = `2008`)) +
   geom_hline(yintercept = 0) +
   geom_smooth(method = "loess", se = TRUE, span = .35)
 
-for (i in 2:ncol(data_wide)) {
-  paste("year", colnames(data_wide)[i], sep = "") = data.frame()
-}
+data_wide = data.frame(data_wide)
+
+
+
+
+library(reshape)
+
+data_wide$ID = rownames(data_wide)
+
+the_min = apply(data_wide[,2:12], 1, min, na.rm = TRUE)   
+the_median = apply(data_wide[,2:12], 1, median, na.rm = TRUE)
+the_max = apply(data_wide[,2:12], 1, max, na.rm = TRUE)
+
+data_wide$min = the_min
+data_wide$med = the_median
+data_wide$max = the_max
+
+
+mdata <- melt(data_wide, id = c("Date", "ID", "min", "med", "max"))
+mdata$variable = as.numeric(mdata$variable)
+mdata$Date = as.factor(mdata$Date)
+mdata$ID = as.numeric(mdata$ID)
+
+# mdataWO2012 = mdata[which(mdata$variable != 5), ]
+# mdataWO2012 = mdataWO2012[which(mdataWO2012$variable != 9), ]
+
+ggplot() +
+  # geom_point(data = na.omit(mdata), aes(x = ID, y = value, color = as.factor(variable))) +
+  # geom_hline(yintercept = 0) +
+  # geom_smooth(data = na.omit(mdata), aes(x = ID, y = value, color = as.factor(variable)),
+              # method = "loess", se = TRUE, span = .35) +
+  geom_point(data = na.omit(mdata), aes(x = ID, y = value), color = "black") +
+  geom_line(data = na.omit(mdata), aes(x = ID, y = med), color = "red") + 
+  geom_hline(yintercept = 0) +
+  geom_smooth(data = na.omit(mdata), aes(x = ID, y = med), color = "red",
+              method = "loess", se = TRUE, span = .5) +
+  geom_smooth(data = na.omit(mdata), aes(x = ID, y = value), color = "black",
+              method = "loess", se = TRUE, span = .5) +
+  scale_x_continuous(breaks = seq(0, 317, 30), lim = c(0, 317)) + 
+  scale_y_continuous(breaks = seq(-0.5, 0.4, .1), lim = c(-0.5, 0.4)) + 
+
+  geom_point(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference), color = "red", size = 1) +
+  geom_vline(xintercept = 125) + # May 5th
+  geom_vline(xintercept = 235) + # Aug 24th
+  geom_hline(yintercept = 0) +
+
+  geom_smooth(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference), 
+              color = "red", size = 1, 
+              method = "loess", se = TRUE, span = .35) + 
+  annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
+  annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
 
 
 
