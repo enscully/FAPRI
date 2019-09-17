@@ -495,28 +495,99 @@ ggplot() +
   # geom_point(data = na.omit(mdata), aes(x = ID, y = value, color = as.factor(variable))) +
   # geom_hline(yintercept = 0) +
   # geom_smooth(data = na.omit(mdata), aes(x = ID, y = value, color = as.factor(variable)),
-              # method = "loess", se = TRUE, span = .35) +
-  geom_point(data = na.omit(mdata), aes(x = ID, y = value), color = "black") +
-  geom_line(data = na.omit(mdata), aes(x = ID, y = med), color = "red") + 
+  # method = "loess", se = TRUE, span = .35) +
+  geom_point(data = na.omit(mdata), aes(x = ID, y = value, color = "a")) +
+  # geom_line(data = na.omit(mdata), aes(x = ID, y = med), color = "red") + 
   geom_hline(yintercept = 0) +
-  geom_smooth(data = na.omit(mdata), aes(x = ID, y = med), color = "red",
-              method = "loess", se = TRUE, span = .5) +
-  geom_smooth(data = na.omit(mdata), aes(x = ID, y = value), color = "black",
-              method = "loess", se = TRUE, span = .5) +
+  geom_smooth(data = na.omit(mdata), aes(x = ID, y = med, color = "b"),
+              method = "loess", se = TRUE, span = .4) +
+  geom_smooth(data = na.omit(mdata), aes(x = ID, y = value, color = "c"),
+              method = "loess", se = TRUE, span = .4) +
   scale_x_continuous(breaks = seq(0, 317, 30), lim = c(0, 317)) + 
-  scale_y_continuous(breaks = seq(-0.5, 0.4, .1), lim = c(-0.5, 0.4)) + 
-
-  geom_point(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference), color = "red", size = 1) +
+  scale_y_continuous(breaks = seq(-0.55, 0.4, .1), lim = c(-0.55, 0.4)) + 
+  
+  # geom_line(data = loessFitDF, aes(x = ID, y = fits), color = "hotpink") + 
+  
+  geom_point(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference, color = "d"), size = 1) +
   geom_vline(xintercept = 125) + # May 5th
   geom_vline(xintercept = 235) + # Aug 24th
   geom_hline(yintercept = 0) +
-
+  
   geom_smooth(data = na.omit(futuresMarketSelectTest[1:317, c("ID", "Difference")]), aes(x = ID, y = Difference), 
               color = "red", size = 1, 
               method = "loess", se = TRUE, span = .35) + 
-  annotate("text", x = 60, y = -.1, label = "Jan 1 - May 5", color = "red", size = 10) + 
-  annotate("text", x = 170, y = -.1, label = "May 5 - Aug 24", color = "red", size = 10) + 
-  annotate("text", x = 270, y = -.1, label = "Aug 24 - Nov 14", color = "red", size = 10)
+  # annotate("text", x = 60, y = -0.6, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  # annotate("text", x = 170, y = -0.6, label = "May 5 - Aug 24", color = "red", size = 10) + 
+  # annotate("text", x = 270, y = -0.6, label = "Aug 24 - Nov 14", color = "red", size = 10) +
+  
+  annotate("text", x = 30, y = -0.35, label = "No 2012 Crop Year", color = "red", size = 5) +
+  scale_colour_manual(name = '', 
+                      values = c('a' = 'black', 'b' = 'forestgreen','c' = 'blue', 'd' = 'red'), 
+                      labels = c('All Differences', 'Regression of Median', 'Regression of \n All Differences', 'Regression of \n Average Differences'))
+
+
+loessMdata = mdata[which(mdata$ID < 318), ]
+
+loessFit = loess(formula = med ~ ID, data = loessMdata, span = 0.4)
+
+loessFitDF = data.frame(fits = loessFit$fitted, ID = loessFit$x)
+
+
+ggplot() + 
+  # geom_point(data = na.omit(mdata), aes(x = ID, y = med), color = "green") +
+  geom_point(data = na.omit(mdata), aes(x = ID, y = value), color = "black") +
+  # geom_point(data = loessFitDF, aes(x = ID, y = fits), color = "green", size = 1.25) + 
+  geom_vline(xintercept = 125) + # May 5th
+  geom_vline(xintercept = 235) + # Aug 24th
+  geom_line(data = loessFitDF, aes(x = ID, y = fits, color = "red"), size = 1) + 
+  geom_hline(yintercept = 0) +
+  scale_x_continuous(breaks = seq(0, 317, 30), lim = c(0, 317)) + 
+  scale_y_continuous(breaks = seq(-0.35, 0.30, .1), lim = c(-0.35, 0.30)) + 
+  scale_colour_manual(name = '', 
+                      values = c('red' = 'red'), 
+                      labels = c('Regression on Median'))
+
+
+loessMdata$fits = loessFitDF$fits
+
+
+data_wideMed = data_wide[which(as.numeric(data_wide$ID) < 318), ]
+data_wideMed$fits = loessMdata$fits[1:317]
+
+
+loessMdata$colors = NA
+
+
+for (i in 1:nrow(loessMdata)) {
+  if (is.na(loessMdata$value[i])) {
+    loessMdata$colors[i] = NA
+  }
+  else if (loessMdata$value[i] >= loessMdata$fits[i]) {
+    loessMdata$colors[i] = "upper"
+  } else if (loessMdata$value[i] < loessMdata$fits[i]) {
+    loessMdata$colors[i] = "lower"
+  } 
+}
+
+
+ggplot() + 
+  # geom_point(data = na.omit(mdata), aes(x = ID, y = med), color = "green") +
+  geom_point(data = na.omit(loessMdata), aes(x = ID, y = value, color = colors)) +
+  # geom_point(data = loessFitDF, aes(x = ID, y = fits), color = "green", size = 1.25) + 
+  # geom_line(data = loessFitDF, aes(x = ID, y = fits), color = "red", size = 1) + 
+  scale_x_continuous(breaks = seq(0, 317, 30), lim = c(0, 317)) + 
+  scale_y_continuous(breaks = seq(-0.1, 0.30, .1), lim = c(-0.1, 0.30)) + 
+  geom_smooth(data = loessMdata, aes(x = ID, y = med), 
+              color = "red", size = 1, 
+              method = "loess", se = TRUE, span = .4) +  
+  geom_vline(xintercept = 125) + # May 5th
+  geom_vline(xintercept = 235) + # Aug 24th
+  geom_hline(yintercept = 0)
+
+
+length(which(loessMdata$colors == "upper"))
+length(which(loessMdata$colors == "lower"))
+
 
 
 
