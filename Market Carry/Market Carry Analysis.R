@@ -488,6 +488,35 @@ mdata$variable = as.numeric(mdata$variable)
 mdata$Date = as.factor(mdata$Date)
 mdata$ID = as.numeric(mdata$ID)
 
+
+# For full carry
+setDT(x)   # coerce to data.table
+data_wideFullCarry <- dcast(x, Date ~ yearVar, 
+                            value.var = "fullCarry")
+
+data_wideFullCarry = data.frame(data_wideFullCarry)
+
+data_wideFullCarry$ID = rownames(data_wideFullCarry)
+
+the_minFullCarry = apply(data_wideFullCarry[,2:12], 1, min, na.rm = TRUE)   
+the_medianFullCarry = apply(data_wideFullCarry[,2:12], 1, median, na.rm = TRUE)
+the_maxFullCarry = apply(data_wideFullCarry[,2:12], 1, max, na.rm = TRUE)
+
+data_wideFullCarry$min = the_minFullCarry
+data_wideFullCarry$med = the_medianFullCarry
+data_wideFullCarry$max = the_maxFullCarry
+
+
+mdataFullCarry <- melt(data_wideFullCarry, id = c("Date", "ID", "min", "med", "max"))
+mdataFullCarry$variable = as.numeric(mdataFullCarry$variable)
+mdataFullCarry$Date = as.factor(mdataFullCarry$Date)
+mdataFullCarry$ID = as.numeric(mdataFullCarry$ID)
+
+
+# Attach full carry column to main data set
+mdata$fullCarry = mdataFullCarry$value
+
+
 # mdataWO2012 = mdata[which(mdata$variable != 5), ]
 # mdataWO2012 = mdataWO2012[which(mdataWO2012$variable != 9), ]
 
@@ -542,10 +571,14 @@ ggplot() +
   geom_line(data = loessFitDF, aes(x = ID, y = fits, color = "red"), size = 1) + 
   geom_hline(yintercept = 0) +
   scale_x_continuous(breaks = seq(0, 317, 30), lim = c(0, 317)) + 
-  scale_y_continuous(breaks = seq(-0.35, 0.30, .1), lim = c(-0.35, 0.30)) + 
+  scale_y_continuous(breaks = seq(-1.5, 0.30, .1), lim = c(-1.5, 0.30)) + 
+  annotate("text", x = 60, y = -1.5, label = "Jan 1 - May 5", color = "red", size = 10) + 
+  annotate("text", x = 170, y = -1.5, label = "May 5 - Aug 24", color = "red", size = 10) + 
+  annotate("text", x = 280, y = -1.5, label = "Aug 24 - Nov 14", color = "red", size = 10) +
   scale_colour_manual(name = '', 
                       values = c('red' = 'red'), 
-                      labels = c('Regression on Median'))
+                      labels = c('Regression on Median')) + 
+  labs(title = "Soybeans - Median", y = "Price Difference Mar - Nov (dollars)", x = "Day in Year")
 
 
 loessMdata$fits = loessFitDF$fits
@@ -587,6 +620,31 @@ ggplot() +
 
 length(which(loessMdata$colors == "upper"))
 length(which(loessMdata$colors == "lower"))
+
+
+# Graph median with full carry
+ggplot() + 
+  # geom_point(data = na.omit(mdata), aes(x = ID, y = med), color = "green") +
+  geom_point(data = mdata, aes(x = ID, y = value), color = "black") +
+  # geom_point(data = loessFitDF, aes(x = ID, y = fits), color = "green", size = 1.25) + 
+  geom_vline(xintercept = 95) + # April 5th
+  geom_vline(xintercept = 235) + # Aug 24th
+  geom_line(data = loessFitDF, aes(x = ID, y = fits, color = "Regression on Median"), size = 1) + 
+  
+  geom_point(data = mdata, aes(x = ID, y = fullCarry), color = "#1ec74a", size = 1) + 
+  geom_smooth(data = mdata, aes(x = ID, y = fullCarry, color = "Regression on Full Carry"), 
+              size = 1, 
+              method = "loess", se = TRUE, span = .4) + 
+  
+  geom_hline(yintercept = 0) +
+  scale_x_continuous(breaks = seq(0, 242, 30), lim = c(0, 242)) + 
+  scale_y_continuous(breaks = seq(-0.15, 0.25, .1), lim = c(-0.15, 0.25)) + 
+  annotate("text", x = 50, y = -0.1, label = "Jan 1 - April 5", color = "red", size = 10) +
+  annotate("text", x = 170, y = -0.1, label = "April 5 - Aug 24", color = "red", size = 10) +
+  annotate("text", x = 280, y = -0.1, label = "Aug 24 - Dec 14", color = "red", size = 10) +
+  scale_colour_manual(name = '', 
+                      values = c('Regression on Median' = 'red', "Regression on Full Carry" = "blue")) + 
+  labs(title = "Corn - Median", y = "Price (dollars)", x = "Day in Year")
 
 
 
