@@ -432,6 +432,7 @@ d
 
 
 futuresMarketSelectNoYear$originalDate = futuresMarketSelect$Date
+futuresMarketSelectNoYear$fullCarry = futuresMarketSelect$fullCarry
 
 futuresMarketSelectNoYear[which(futuresMarketSelectNoYear$Date == "09-08"),]
 futuresMarketSelectNoYear[which(futuresMarketSelectNoYear$Date == "09-15"),]
@@ -466,7 +467,6 @@ ggplot(data = na.omit(data_wide), aes(x = Date, y = `2008`)) +
   geom_smooth(method = "loess", se = TRUE, span = .35)
 
 data_wide = data.frame(data_wide)
-
 
 
 
@@ -638,13 +638,13 @@ ggplot() +
   
   geom_hline(yintercept = 0) +
   scale_x_continuous(breaks = seq(0, 242, 30), lim = c(0, 242)) + 
-  scale_y_continuous(breaks = seq(-0.15, 0.25, .1), lim = c(-0.15, 0.25)) + 
+  scale_y_continuous(breaks = seq(-0.15, .45, .1), lim = c(-0.15, 0.45)) + 
   annotate("text", x = 50, y = -0.1, label = "Jan 1 - April 5", color = "red", size = 10) +
   annotate("text", x = 170, y = -0.1, label = "April 5 - Aug 24", color = "red", size = 10) +
   annotate("text", x = 280, y = -0.1, label = "Aug 24 - Dec 14", color = "red", size = 10) +
   scale_colour_manual(name = '', 
                       values = c('Regression on Median' = 'red', "Regression on Full Carry" = "blue")) + 
-  labs(title = "Corn - Median", y = "Price (dollars)", x = "Day in Year")
+  labs(title = "Soybeans - Median", y = "Price (dollars)", x = "Day in Year")
 
 
 
